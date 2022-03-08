@@ -6,6 +6,7 @@
     <!--管理子模块 -->
     <modules>
         <module>coupon-eureka</module>
+        <module>coupon-gateway</module>
     </modules>
     <name>coupon-system</name>
     <packaging>pom</packaging>
