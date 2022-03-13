@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>coupon-common</module>
+        <module>coupon-template</module>
     </modules>
 
     <properties>
