@@ -19,6 +19,12 @@ zuul:
       serviceId: eureka-client-coupon-template
       #实际url也会包括path
       strip-prefix: false
+    #分发微服务
+    distribution:
+      path: /coupon-distribution/**
+      serviceId: /eureka-client-coupon-distribution
+      strip-prefix: false
+
   host:
     connect-timeout-millis: 15000
     socket-timeout-millis: 60000

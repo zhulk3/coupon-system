@@ -1,0 +1,27 @@
+package com.longkai.coupon.constant;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.Objects;
+import java.util.stream.Stream;
+
+@Getter
+@AllArgsConstructor
+public enum GoodsType {
+    WENYI("文娱", 1),
+    SHENGXIAN("生鲜", 2),
+    JIAJU("家居", 3),
+    OTHER("其他", 4),
+    ALL("全部", 5);
+    private String desc;
+    private Integer code;
+
+    public static GoodsType of(Integer code) {
+        Objects.requireNonNull(code);
+        return Stream.of(values())
+                .filter(bean -> bean.code.equals(code))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("code not exist"));
+    }
+}
