@@ -11,6 +11,7 @@
         <module name="coupon-distribution" />
         <module name="coupon-common" />
         <module name="coupon-eureka" />
+        <module name="coupon-settlement" />
         <module name="coupon-gateway" />
       </profile>
     </annotationProcessing>
@@ -22,6 +23,7 @@
       <module name="coupon-eureka" options="-parameters" />
       <module name="coupon-gateway" options="-parameters" />
       <module name="coupon-service" options="-parameters" />
+      <module name="coupon-settlement" options="-parameters" />
       <module name="coupon-template" options="-parameters" />
     </option>
   </component>

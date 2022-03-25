@@ -1,0 +1,22 @@
+server:
+  port: 7003
+  servlet:
+    context-path: /coupon-settlement
+
+spring:
+  application:
+    name: eureka-client-coupon-settlement
+  client:
+    service-url:
+      defaultZone: http://localhost:8000/eureka/
+
+
+info:
+  app:
+    name: coupon-system-settlement
+
+logging:
+  level:
+    com.longkai.coupon: debug
+
+
