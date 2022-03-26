@@ -28,7 +28,7 @@ public class DiscountExecutor extends AbstractExecutor implements RulerExecutor 
         CouponTemplateSDK sdk = settlementInfo.getCouponAndTemplateInfos().get(0).getTemplateSDK();
         double quota = sdk.getRuler().getDiscount().getQuota();
         settlementInfo.setCost(retain2Decimals(goodsSum * quota * 1.0 / 100));
-        log.debug("use coupon make cost from {}to {}", goodsSum, settlementInfo.getCost());
+        log.debug("use coupon make cost from {} to {}", goodsSum, settlementInfo.getCost());
         return settlementInfo;
     }
 }

@@ -6,6 +6,7 @@ import com.longkai.coupon.vo.SettlementInfo;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,17 +16,24 @@ public abstract class AbstractExecutor {
      * 校验商品类型与优惠券是否匹配
      * 1、单品类优惠券校验，多品类可以重载
      *
-     * @param settlementInfo
+     * @param
      * @return
      */
-    protected boolean isGoodsTypeSatisfy(SettlementInfo settlementInfo) {
-        List<Integer> goodsType = settlementInfo.getGoodsInfos()
-                .stream().map(GoodsInfo::getType).collect(Collectors.toList());
-        List<Integer> templateGoodType = JSON.parseObject(
-                settlementInfo.getCouponAndTemplateInfos().get(0)
-                        .getTemplateSDK().getRuler().getUsage().getGoodsType(), List.class
+    protected boolean isGoodsTypeSatisfy(SettlementInfo settlement) {
+
+        List<Integer> goodsType = settlement.getGoodsInfos()
+                .stream().map(GoodsInfo::getType)
+                .collect(Collectors.toList());
+        List<Integer> templateGoodsType = JSON.parseObject(
+                settlement.getCouponAndTemplateInfos().get(0).getTemplateSDK()
+                        .getRuler().getUsage().getGoodsType(),
+                List.class
         );
-        return CollectionUtils.isNotEmpty(CollectionUtils.intersection(goodsType, templateGoodType));
+
+        // 存在交集即可
+        return CollectionUtils.isNotEmpty(
+                CollectionUtils.intersection(goodsType, templateGoodsType)
+        );
     }
 
     /**
@@ -39,7 +47,7 @@ public abstract class AbstractExecutor {
         boolean isGoodsTypeSatisfy = isGoodsTypeSatisfy(settlementInfo);
         if (!isGoodsTypeSatisfy) {
             settlementInfo.setCost(goodSum);
-            settlementInfo.setCouponAndTemplateInfos(null);
+            settlementInfo.setCouponAndTemplateInfos(Collections.emptyList());
             return settlementInfo;
         }
         return null;

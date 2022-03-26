@@ -58,10 +58,12 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
             infos.add(full);
         }
         double discountQuota = discount.getTemplateSDK().getRuler().getDiscount().getQuota();
-        targetSum -= discountQuota * 1.0 / 100;
+        targetSum = targetSum*discountQuota * 1.0 / 100;
         infos.add(discount);
         settlementInfo.setCouponAndTemplateInfos(infos);
         settlementInfo.setCost(retain2Decimals(targetSum));
+        log.debug("Use ManJian And ZheKou Coupon Make Goods Cost From {} To {}",
+                goodSum, settlementInfo.getCost());
         return settlementInfo;
     }
 
