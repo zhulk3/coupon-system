@@ -6,6 +6,7 @@ server:
 spring:
   application:
     name: eureka-client-coupon-template
+
   jpa:
     show-sql: true
     hibernate:

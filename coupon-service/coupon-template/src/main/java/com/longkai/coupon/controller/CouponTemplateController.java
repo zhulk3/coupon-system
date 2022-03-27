@@ -20,7 +20,7 @@ import java.util.Map;
  */
 
 @Slf4j
-@RestController("/template")
+@RestController
 public class CouponTemplateController {
     private final IBuildTemplateService buildTemplateService;
     private final ITemplateBaseService templateBaseService;

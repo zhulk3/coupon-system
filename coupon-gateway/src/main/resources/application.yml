@@ -22,7 +22,7 @@ zuul:
     #分发微服务
     distribution:
       path: /coupon-distribution/**
-      serviceId: /eureka-client-coupon-distribution
+      serviceId: eureka-client-coupon-distribution
       strip-prefix: false
     #结算微服务
     settlement:
@@ -34,5 +34,5 @@ zuul:
     connect-timeout-millis: 15000
     socket-timeout-millis: 60000
 ribbon:
-  ConnecTimeout: 15000
+  ConnectTimeout: 15000
   ReadTimeout: 15000

@@ -31,7 +31,7 @@ public class HealthChecker {
 
     /**
      * <h2>健康检查接口</h2>
-     * 1727.0.0.1:7001/coupon-template/health
+     * 127.0.0.1:7001/coupon-template/health
      */
     @GetMapping("/template/health")
     public String isHealthy() {
