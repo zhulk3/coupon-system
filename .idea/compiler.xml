@@ -22,7 +22,7 @@
       <module name="coupon-distribution" options="-parameters" />
       <module name="coupon-eureka" options="-parameters" />
       <module name="coupon-gateway" options="-parameters" />
-      <module name="coupon-service" options="-parameters" />
+      <module name="coupon-service" options="" />
       <module name="coupon-settlement" options="-parameters" />
       <module name="coupon-template" options="-parameters" />
     </option>

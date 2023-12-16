@@ -1,2 +1,7 @@
 # Project exclude paths
 /coupon-eureka/target/
+/coupon-gateway/target/
+/coupon-service/coupon-common/target/
+/coupon-service/coupon-distribution/target/
+/coupon-service/coupon-settlement/target/
+/coupon-service/coupon-template/target/
