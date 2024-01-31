@@ -19,6 +19,7 @@ import java.util.Optional;
 
 /**
  * 修改cache之后，由kafka异步修改到DB中
+ * 全程操作redis，修改cache之后需要同步到DB
  */
 
 @Slf4j
@@ -32,7 +33,11 @@ public class KafkaServiceImpl implements IKafkaService {
         this.couponDao = couponDao;
     }
 
-    @KafkaListener(topics = {Constant.TOPIC}, groupId = "imooc-coupon-1")
+    /**
+     * 当有message到来时，由kafka直接调用，
+     * @param record
+     */
+    @KafkaListener(topics = {Constant.TOPIC}, groupId = "coupon_data_op")
     @Override
     public void consumeCouponKafkaMessage(ConsumerRecord<?, ?> record) {
         Optional<?> kafkaMessage = Optional.ofNullable(record.value());
@@ -69,8 +74,8 @@ public class KafkaServiceImpl implements IKafkaService {
         if (CollectionUtils.isEmpty(coupons) || coupons.size() != message.getIds().size()) {
             log.error("Can not find coupon info : {}", JSON.toJSONString(message));
         }
-        coupons.forEach((item) -> {
-            item.setCouponStatus(status);
-        });
+        coupons.forEach((item) -> item.setCouponStatus(status));
+        //同步修改到DB
+        log.info("saved coupons {}",couponDao.saveAll(coupons).size());
     }
 }

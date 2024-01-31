@@ -1,5 +1,5 @@
 -- 登录 MySQL 服务器
-mysql -hlocalhost -uzhulk3 -pa12345
+mysql -hlocalhost -uzhulk3 -pcaiculati2on
 
 -- 创建数据库 imooc_coupon_data
 CREATE DATABASE IF NOT EXISTS coupon_data;

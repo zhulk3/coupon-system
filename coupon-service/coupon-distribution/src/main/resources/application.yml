@@ -58,15 +58,20 @@ info:
 logging:
   level:
     com.longkai.coupon: debug
+ # feign 相关的配置
 feign:
-  hystrix:
+  circuit breaker:
     enabled: true
+    # 注意：feign的fallback， ↑ 新版用这种方式开启。↓ 旧版用这个
+  hystrix:
+    enabled: true   # Hystrix 默认是关闭的
+
   client:
     config:
-      default:
-        connectTimeout: 2000
-        readTime: 5000
-      eureka-client-coupon-template:
-        connectTimeout: 3000
+      default:  # 全局的
+        connectTimeout: 2000  # 默认的连接超时时间是 10s
+        readTimeout: 5000
+      eureka-client-coupon-template:  # 单独服务的配置
+        connectTimeout: 3000  # 默认的连接超时时间是 10s
         readTimeout: 5000
 

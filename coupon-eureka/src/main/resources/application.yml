@@ -1,6 +1,6 @@
 spring:
   application:
-    name: coupon-euraka
+    name: coupon-eureka
 
 server:
   port: 8000
@@ -8,6 +8,7 @@ server:
 eureka:
   instance:
     hostname: localhost
+    prefer-ip-address: true
   client:
     #标示是否需要从其他节点的Eureka Server中获取信息，单节点设置为false。
     fetch-registry: false

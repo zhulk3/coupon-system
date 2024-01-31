@@ -32,10 +32,13 @@ public class RedisServiceImpl implements IRedisService {
 
     @Override
     public List<Coupon> getCachedCoupons(Long userId, Integer status) {
+        log.info("Get Coupons From Cache: {}, {}", userId, status);
         String redisKey = statusToRedisKey(status, userId);
+        //value是一个list，Coupon
         List<String> couponStr = redisTemplate.opsForHash().values(redisKey)
                 .stream().map(o -> Objects.toString(o, null)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(couponStr)) {
+            //防止下一次查询MySQL
             savaEmptyCouponListToCache(userId, Collections.singletonList(status));
             return Collections.emptyList();
         }
@@ -45,6 +48,7 @@ public class RedisServiceImpl implements IRedisService {
     @Override
     public void savaEmptyCouponListToCache(Long useId, List<Integer> status) {
         log.info("sava empty list to cache for user: {}, status: {}", useId, status);
+        //key value结构， key是status， value是一个map，{id,coupon}
         Map<String, String> invalidCouponMap = new HashMap<>();
         invalidCouponMap.put("-1", JSON.toJSONString(Coupon.invalidCoupon()));
         SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
@@ -52,6 +56,7 @@ public class RedisServiceImpl implements IRedisService {
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
                 status.forEach(s -> {
                     String redisKey = statusToRedisKey(s, useId);
+                    //对每个状态存入一个无效值
                     redisOperations.opsForHash().putAll(redisKey, invalidCouponMap);
                 });
                 return null;
@@ -62,6 +67,7 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     private String statusToRedisKey(Integer status, Long userId) {
+        //每个用户的每个状态都有一个key
         String redisKey = null;
         CouponStatus couponStatus = CouponStatus.of(status);
         switch (couponStatus) {
@@ -78,9 +84,16 @@ public class RedisServiceImpl implements IRedisService {
         return redisKey;
     }
 
+    /**
+     * 模版服务异步生成的
+     *
+     * @param templateId 模版id
+     * @return 通过模版构建出的优惠券的id
+     */
     @Override
     public String tryToAcquireCouponCodeFromCache(Integer templateId) {
         String redisKey = String.format("%s%s", Constant.RedisPrefix.COUPON_TEMPLATE, templateId);
+        //可以访问模版服务写入的redis数据吗？
         String couponCode = redisTemplate.opsForList().leftPop(redisKey);
         log.info("get coupon code::{},templateId:{}", couponCode, templateId);
         return couponCode;
@@ -106,15 +119,29 @@ public class RedisServiceImpl implements IRedisService {
         return result;
     }
 
+    /**
+     * 只会影响一个cache {@link Constant.RedisPrefix#USER_COUPON_AVAILABLE}
+     */
+
     private Integer addUsableCouponToCache(Long useId, List<Coupon> coupons) {
         Map<String, String> map = new HashMap<>();
         coupons.forEach(e -> map.put(e.getId().toString(), JSON.toJSONString(e)));
         String redisKey = statusToRedisKey(CouponStatus.USABLE.getCode(), useId);
         redisTemplate.opsForHash().putAll(redisKey, map);
         log.info("Add {} coupons toCache:{},{}", map.size(), useId, redisKey);
+        //设置缓存过期时间，防止缓存耗尽
         redisTemplate.expire(redisKey, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
         return map.size();
     }
+
+    /**
+     * 往{@link Constant.RedisPrefix#USER_COUPON_USED} 添加缓存，会影响{@link Constant.RedisPrefix#USER_COUPON_AVAILABLE }中的数据
+     *
+     * @param userId
+     * @param coupons
+     * @return
+     * @throws CouponException
+     */
 
     private Integer addUsedCouponToCache(Long userId, List<Coupon> coupons) throws CouponException {
         log.debug("Add Coupon To Used");
@@ -123,9 +150,8 @@ public class RedisServiceImpl implements IRedisService {
         String usedRedisKey = statusToRedisKey(CouponStatus.USED.getCode(), userId);
         List<Coupon> currentCoupons = getCachedCoupons(userId, CouponStatus.USABLE.getCode());
         assert currentCoupons.size() > coupons.size();
-        coupons.forEach(item -> {
-            map.put(item.getId().toString(), JSON.toJSONString(item));
-        });
+        coupons.forEach(item -> map.put(item.getId().toString(), JSON.toJSONString(item)));
+        //判断传入参数的id是缓存的子集
         List<Integer> curUsableIds = currentCoupons.stream().map(Coupon::getId).collect(Collectors.toList());
         List<Integer> paramIds = coupons.stream().map(Coupon::getId).collect(Collectors.toList());
         if (!CollectionUtils.isSubCollection(paramIds, curUsableIds)) {
@@ -151,6 +177,14 @@ public class RedisServiceImpl implements IRedisService {
         return coupons.size();
     }
 
+    /**
+     * 往{@link Constant.RedisPrefix#USER_EXPIRED_COUPON} 添加缓存，会影响{@link Constant.RedisPrefix#USER_COUPON_AVAILABLE }中的数据
+     *
+     * @param userId
+     * @param coupons
+     * @return
+     * @throws CouponException
+     */
     @SuppressWarnings("check")
     private Integer addExpiredCouponToCache(Long userId, List<Coupon> coupons) throws CouponException {
         log.debug("Add Coupon To Expired");
@@ -159,9 +193,7 @@ public class RedisServiceImpl implements IRedisService {
         String expiredRedisKey = statusToRedisKey(CouponStatus.EXPIRED.getCode(), userId);
         List<Coupon> currentUsableCoupons = getCachedCoupons(userId, CouponStatus.USABLE.getCode());
         assert currentUsableCoupons.size() > coupons.size();
-        coupons.forEach(item -> {
-            needCacheMap.put(item.getId().toString(), JSON.toJSONString(item));
-        });
+        coupons.forEach(item -> needCacheMap.put(item.getId().toString(), JSON.toJSONString(item)));
 
         List<Integer> curUsableIds = currentUsableCoupons.stream().map(Coupon::getId).collect(Collectors.toList());
         List<Integer> paramIds = coupons.stream().map(Coupon::getId).collect(Collectors.toList());
@@ -189,6 +221,7 @@ public class RedisServiceImpl implements IRedisService {
         return coupons.size();
     }
 
+    //key的过期时间，防止大量redis key在同一时间过期，造成缓存雪崩
     private Long getRandomExpirationTime(Integer min, Integer max) {
         return RandomUtils.nextLong(min * 60 * 60, max * 60 * 60);
     }

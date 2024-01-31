@@ -8,6 +8,13 @@ import com.longkai.coupon.vo.SettlementInfo;
 
 import java.util.List;
 
+/**
+ * 1、用户三类优惠券信息展示
+ * 2、查看用户当前可以领取的优惠券模版
+ * 3、用户领取优惠券
+ * 4、用户消费优惠券
+ */
+
 public interface IUserService {
 
     List<Coupon> findCouponsByStatus(Long userId, Integer status) throws CouponException;

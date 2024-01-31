@@ -16,14 +16,25 @@ import java.util.Map;
 
 /**
  * 优惠券结算规则执行管理器
+ * 根据用户结算信息{@link SettlementInfo 选择结算执行器}
+ * {@link BeanPostProcessor 所有的Bean都被创建以后再执行其中的方法}
  */
 
 @Component
 @Slf4j
 public class ExecutorManager implements BeanPostProcessor {
+    /**
+     * 规则执行器映射
+     */
     private static Map<RulerFlag, RulerExecutor> executorMap = new HashMap<>(RulerFlag.values().length);
 
-    //优惠券结算规则入口
+    /**
+     * 优惠券结算规则入口
+     *
+     * @param settlementInfo 需要确保其中存在优惠券
+     * @return
+     * @throws CouponException
+     */
     public SettlementInfo computeRuler(SettlementInfo settlementInfo) throws CouponException {
         SettlementInfo result = null;
         if (settlementInfo.getCouponAndTemplateInfos().size() == 1) {
@@ -43,12 +54,14 @@ public class ExecutorManager implements BeanPostProcessor {
             List<CouponCategory> categories = new ArrayList<>(settlementInfo.getCouponAndTemplateInfos().size());
             settlementInfo.getCouponAndTemplateInfos().forEach(item -> categories.add(CouponCategory.of(item.getTemplateSDK().getCategory())));
             if (categories.size() != 2) {
+                //目前只支持两张优惠券
                 throw new CouponException("not support for more template coupon");
             } else {
                 if (categories.contains(CouponCategory.FULL_DISCOUNT) && categories.contains(CouponCategory.DISCOUNT)) {
                     result = executorMap.get(RulerFlag.FULL_DISCOUNT_AND_DISCOUNT).computeRuler(settlementInfo);
                 } else {
-                    throw new CouponException("not support for other combine");
+                    //目前只支持满减+折扣一起使用，可以扩展
+                    throw new CouponException("not support for other combination");
                 }
             }
         }
@@ -68,6 +81,7 @@ public class ExecutorManager implements BeanPostProcessor {
         if (executorMap.containsKey(executor)) {
             throw new IllegalStateException("there is already executor for " + flag);
         }
+        log.info("load executor");
         executorMap.put(flag, executor);
         return null;
     }

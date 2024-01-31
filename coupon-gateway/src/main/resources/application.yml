@@ -9,6 +9,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8000/eureka/
+  instance:
+    prefer-ip-address: true
 
 zuul:
   prefix: /coupon
@@ -21,6 +23,7 @@ zuul:
       strip-prefix: false
     #分发微服务
     distribution:
+      # 根据path进行转发
       path: /coupon-distribution/**
       serviceId: eureka-client-coupon-distribution
       strip-prefix: false

@@ -31,12 +31,25 @@ public class CouponTemplateController {
         this.templateBaseService = templateBaseService;
     }
 
+    /**
+     * 127.0.0.1:7001/coupon-template/build
+     * 127.0.0.1:7001/coupon/coupon-template/build 通过网关访问
+     * @param request
+     * @return
+     * @throws CouponException
+     */
     @PostMapping("/build")
     public CouponTemplate buildTemplate(@RequestBody TemplateRequest request) throws CouponException {
         log.info("build template: {}", JSON.toJSONString(request));
         return buildTemplateService.buildTemplate(request);
     }
 
+    /**
+     * localhost:7001/coupon-template/info?id=xx
+     * @param id
+     * @return
+     * @throws CouponException
+     */
     @GetMapping("/info")
     public CouponTemplate buildTemplateInfo(@RequestParam("id") Integer id) throws CouponException {
         log.info("Build Template Info For {}", id);

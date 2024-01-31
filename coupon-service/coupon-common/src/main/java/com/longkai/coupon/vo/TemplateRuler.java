@@ -5,15 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-
+//优惠券规则对象
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TemplateRuler {
     private Expiration expiration;
     private Discount discount;
+    /** 每个人最大可以领取数量 */
     private Integer limitation;
     private Usage usage;
+
+    /** 多种优惠券叠加使用的情况需要判断,是一个list */
     private String weight; //可以和哪些优惠券叠加使用
 
     public boolean validate() {
@@ -37,6 +40,9 @@ public class TemplateRuler {
         }
     }
 
+    /**
+     * 需要与优惠券类型配合决定
+     */
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -56,6 +62,7 @@ public class TemplateRuler {
     public static class Usage {
         private String province;
         private String city;
+        //商品类型限制
         private String goodsType;
 
         boolean validate() {

@@ -27,7 +27,7 @@ public class DiscountImmediateExecutor extends AbstractExecutor implements Ruler
         CouponTemplateSDK sdk = settlementInfo.getCouponAndTemplateInfos().get(0).getTemplateSDK();
         double quota = sdk.getRuler().getDiscount().getQuota();
 
-        settlementInfo.setCost(retain2Decimals(goodsSum - quota));
+        settlementInfo.setCost(Math.max(retain2Decimals(goodsSum - quota), minCost()));
         log.debug("use discount immediately cost from {} to {}", goodsSum, goodsSum - quota);
         return settlementInfo;
     }

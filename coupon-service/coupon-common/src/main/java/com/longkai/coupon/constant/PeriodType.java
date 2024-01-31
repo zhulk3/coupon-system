@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * 有限期类型枚举
+ * 有效期类型枚举
  */
 @Getter
 @AllArgsConstructor

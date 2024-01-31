@@ -7,6 +7,7 @@ import com.longkai.coupon.service.AbstractExecutor;
 import com.longkai.coupon.service.RulerExecutor;
 import com.longkai.coupon.vo.GoodsInfo;
 import com.longkai.coupon.vo.SettlementInfo;
+import com.longkai.coupon.vo.TemplateRuler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,7 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
             log.debug("FullAndDiscount not match");
             return probability;
         }
+        //settlementInfo中有两张优惠券
         SettlementInfo.CouponAndTemplateInfo full = null;
         SettlementInfo.CouponAndTemplateInfo discount = null;
         for (SettlementInfo.CouponAndTemplateInfo info : settlementInfo.getCouponAndTemplateInfos()) {
@@ -50,6 +52,7 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
             settlementInfo.setCouponAndTemplateInfos(Collections.emptyList());
         }
         List<SettlementInfo.CouponAndTemplateInfo> infos = new ArrayList<>();
+        //先计算满减，因为如果先计算折扣，可能就折扣之后就不符合满减要求率
         double fullBade = full.getTemplateSDK().getRuler().getDiscount().getBase();
         double fullQuota = full.getTemplateSDK().getRuler().getDiscount().getQuota();
         double targetSum = goodSum;
@@ -57,16 +60,22 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
             targetSum -= fullQuota;
             infos.add(full);
         }
+        //再计算折扣，折扣没有门槛
         double discountQuota = discount.getTemplateSDK().getRuler().getDiscount().getQuota();
-        targetSum = targetSum*discountQuota * 1.0 / 100;
+        targetSum = targetSum * discountQuota * 1.0 / 100;
         infos.add(discount);
         settlementInfo.setCouponAndTemplateInfos(infos);
-        settlementInfo.setCost(retain2Decimals(targetSum));
+        settlementInfo.setCost(Math.max(retain2Decimals(targetSum), minCost()));
         log.debug("Use ManJian And ZheKou Coupon Make Goods Cost From {} To {}",
                 goodSum, settlementInfo.getCost());
         return settlementInfo;
     }
 
+    /**
+     * @param templateInfo1
+     * @param templateInfo2
+     * @return 优惠券能否一起使用，核心逻辑是通过判断另一个优惠券是否再{@link TemplateRuler#weight}中
+     */
     @SuppressWarnings("all")
     private boolean isTemplateCanShare(SettlementInfo.CouponAndTemplateInfo templateInfo1, SettlementInfo.CouponAndTemplateInfo templateInfo2) {
         String key1 = templateInfo1.getTemplateSDK().getKey() + String.format("%04d", templateInfo1.getTemplateSDK().getId());
@@ -83,6 +92,13 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
 
     }
 
+    /**
+     * {@link AbstractExecutor#isGoodsTypeSatisfy 是面向单类型优惠券}
+     * 这里实现对满减+折扣优惠券是否支持结算当前商品类型
+     *
+     * @param settlementInfo
+     * @return
+     */
     @Override
     protected boolean isGoodsTypeSatisfy(SettlementInfo settlementInfo) {
         log.debug("check full and discount is match or not");
@@ -91,6 +107,7 @@ public class FullAndDiscountExecutor extends AbstractExecutor implements RulerEx
         settlementInfo.getCouponAndTemplateInfos().forEach(
                 item -> templateGoodsType.addAll(JSON.parseObject(item.getTemplateSDK().getRuler().getUsage().getGoodsType(), List.class))
         );
+        //优惠券支持的类型与商品的类型集合差集需要为空
         return CollectionUtils.isEmpty(CollectionUtils.subtract(goodsTypes, templateGoodsType));
     }
 }

@@ -29,6 +29,7 @@ public class ScheduleTask {
     @Scheduled(fixedRate = 60 * 60 * 1000)
     public void offlineExpiredCouponTemplate() {
         log.info("start to clean expired couponTemplate ");
+        //查询出没有被标记为过期的优惠券模版
         List<CouponTemplate> couponTemplates = couponTemplateDao.findAllByExpired(false);
         if (CollectionUtils.isEmpty(couponTemplates)) {
             return;
@@ -43,6 +44,7 @@ public class ScheduleTask {
             }
         });
         if (CollectionUtils.isNotEmpty(expiredList)) {
+            //saveAll等效与批量修改，
             log.info("expired template num: {}", couponTemplateDao.saveAll(expiredList));
         }
         log.info("offline expired template done");

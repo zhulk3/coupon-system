@@ -32,6 +32,7 @@ public class BuildTemplateServiceImpl implements IBuildTemplateService {
         }
         CouponTemplate template = request2Template(request);
         template = couponTemplateDao.save(template); //返回的template具有自增id
+        //不会阻塞
         asyncService.asyncConstructCouponByTemplate(template);
         return template;
     }

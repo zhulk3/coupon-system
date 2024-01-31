@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 public enum CouponStatus {
     USABLE("可用的", 1),
     USED("已使用的", 2),
-    EXPIRED("过期的", 2);
+    EXPIRED("过期的", 3);
 
     private String desc;
     private Integer code;

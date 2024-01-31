@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class UserServiceTest {
-    private Long fakeUserId = 20001L;
+    private final Long fakeUserId = 20001L;
 
     @Autowired
     private IUserService userService;

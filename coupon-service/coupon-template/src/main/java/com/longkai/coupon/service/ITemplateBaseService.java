@@ -13,10 +13,21 @@ import java.util.Map;
  */
 
 public interface ITemplateBaseService {
+    /**
+     * 根据优惠券模版id获取优惠券模版信息
+     * @param id
+     * @return
+     * @throws CouponException
+     */
     CouponTemplate buildTemplateInfo(Integer id) throws CouponException;
 
     List<CouponTemplateSDK> findAllUsableCouponTemplate();
 
+    /**
+     * 获取模版id到CouponTemplateSDK的映射
+     * @param ids
+     * @return
+     */
     Map<Integer, CouponTemplateSDK> findId2TemplateSDK(Collection<Integer> ids);
 
 }

@@ -16,6 +16,7 @@ public class SettlementInfo {
 
     private List<GoodsInfo> goodsInfos;
 
+    /** 是否是结算生效，true表示核消，false表示结算*/
     private Boolean employ;
 
     private Double cost;

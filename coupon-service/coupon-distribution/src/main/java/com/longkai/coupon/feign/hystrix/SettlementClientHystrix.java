@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 结算微服务熔断策略实现
+ * 兜底方法签名需要与真正的调用方法相同
  */
 
 @Slf4j

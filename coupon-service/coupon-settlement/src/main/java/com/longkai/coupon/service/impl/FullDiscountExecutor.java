@@ -29,13 +29,14 @@ public class FullDiscountExecutor extends AbstractExecutor implements RulerExecu
         CouponTemplateSDK sdk = settlementInfo.getCouponAndTemplateInfos().get(0).getTemplateSDK();
         double base = sdk.getRuler().getDiscount().getBase();
         double quota = sdk.getRuler().getDiscount().getQuota();
+        //没有达到额度
         if (goodsSum < base) {
             log.debug("current goods cost sum < base");
             settlementInfo.setCost(goodsSum);
             settlementInfo.setCouponAndTemplateInfos(Collections.emptyList());
             return settlementInfo;
         }
-        //使用优惠券计算价格
+        //达到满减额度，使用优惠券计算价格
         settlementInfo.setCost(retain2Decimals(Math.max((goodsSum - quota), minCost())));
         log.debug("use coupon make cost from {}to {}", goodsSum, settlementInfo.getCost());
         return settlementInfo;

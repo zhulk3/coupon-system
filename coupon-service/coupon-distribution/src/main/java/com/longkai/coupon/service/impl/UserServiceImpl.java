@@ -32,7 +32,7 @@ public class UserServiceImpl implements IUserService {
     private final IRedisService redisService;
     private final TemplateClient templateClient;
     private final SettlementClient settlementClient;
-    private final KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
     public UserServiceImpl(CouponDao couponDao,
@@ -59,19 +59,20 @@ public class UserServiceImpl implements IUserService {
             log.debug("coupon cache is empty, get from db", userId, status);
             List<Coupon> dbCoupons = couponDao.findAllByUserIdAndCouponStatus(userId, CouponStatus.of(status));
             if (CollectionUtils.isEmpty(dbCoupons)) {
+                log.debug("current user do not have coupon: {}, {}", userId, status);
                 return dbCoupons;
             }
+            //通过id从模版微服务获取模版信息
             Map<Integer, CouponTemplateSDK> id2TemplateSDK = templateClient.findId2TemplateSDK(
                     dbCoupons.stream().map(Coupon::getTemplateId).collect(Collectors.toList())).getData();
-            dbCoupons.forEach(item -> {
-                item.setCouponTemplateSDK(id2TemplateSDK.get(item.getTemplateId()));
-            });
+
+            dbCoupons.forEach(item -> item.setCouponTemplateSDK(id2TemplateSDK.get(item.getTemplateId())));
             preTarget = dbCoupons;
             redisService.addCouponToCache(userId, preTarget, status);
         }
         //剔除无效优惠券
         preTarget = preTarget.stream().filter(item -> item.getId() != -1).collect(Collectors.toList());
-        //处理过期优惠券
+        //对于可使用优惠券，由于是定期清除策略，所以需要在使用时处理过期优惠券
         if (CouponStatus.of(status) == CouponStatus.USABLE) {
             CouponClassify classify = CouponClassify.classify(preTarget);
             if (CollectionUtils.isNotEmpty(classify.getExpiredList())) {
@@ -152,7 +153,7 @@ public class UserServiceImpl implements IUserService {
         Map<Integer, CouponTemplateSDK> id2Template = templateClient.findId2TemplateSDK(
                 Collections.singletonList(request.getCouponTemplateSDK().getId())
         ).getData();
-        if (id2Template.size() <= 0) {
+        if (id2Template.size() == 0) {
             log.error("Can Not Acquire Template From TemplateClient");
             throw new CouponException("Can Not Acquire Template From TemplateClient");
         }
@@ -165,6 +166,7 @@ public class UserServiceImpl implements IUserService {
             log.error("Exceed Template Assign Limitation,{}", request.getCouponTemplateSDK().getId());
             throw new CouponException("Exceed Template Assign Limitation");
         }
+        //调用findCouponsByStatus时已经将couponCode保存到缓存中
         String couponCode = redisService.tryToAcquireCouponCodeFromCache(request.getCouponTemplateSDK().getId());
         if (StringUtils.isEmpty(couponCode)) {
             log.error("can not acquire coupon code: {}", couponCode);
@@ -173,6 +175,7 @@ public class UserServiceImpl implements IUserService {
         Coupon coupon = new Coupon(request.getCouponTemplateSDK().getId(), request.getUserId(), couponCode, CouponStatus.USABLE);
         //存入以后会生成自增主键
         coupon = couponDao.save(coupon);
+        //DB中不包括TemplateSDK， cache中需要进行填充
         coupon.setCouponTemplateSDK(request.getCouponTemplateSDK());
         redisService.addCouponToCache(request.getUserId(), Collections.singletonList(coupon), CouponStatus.USABLE.getCode());
         return coupon;
@@ -188,6 +191,7 @@ public class UserServiceImpl implements IUserService {
             }
             settlementInfo.setCost(retain2Decimal(sumPrice));
         }
+        //校验传递的优惠券属于用户
         List<Coupon> coupons = findCouponsByStatus(settlementInfo.getUserId(), CouponStatus.USABLE.getCode());
         Map<Integer, Coupon> id2Coupon = coupons.stream().collect(Collectors.toMap(Coupon::getId, Function.identity()));
         if (MapUtils.isEmpty(id2Coupon) ||
@@ -199,10 +203,14 @@ public class UserServiceImpl implements IUserService {
         }
         log.debug("current settlement coupons is user's");
         List<Coupon> settleCoupons = new ArrayList<>(infos.size());
+        //传递进来的参数是id，转换为优惠券信息
         infos.forEach(item -> settleCoupons.add(id2Coupon.get(item.getId())));
+
         SettlementInfo processedInfo = settlementClient.computeRuler(settlementInfo).getData();
         if (processedInfo.getEmploy() && CollectionUtils.isNotEmpty(processedInfo.getCouponAndTemplateInfos())) {
             log.info("settle user coupon:{},{}", settlementInfo.getUserId(), JSON.toJSONString(settleCoupons));
+
+            //核销使用优惠券以后需求更新缓存和DB
             redisService.addCouponToCache(settlementInfo.getUserId(), settleCoupons, CouponStatus.USED.getCode());
             kafkaTemplate.send(Constant.TOPIC,
                     JSON.toJSONString(new CouponKafkaMessage(CouponStatus.USED.getCode(), settleCoupons.stream().map(Coupon::getId).collect(Collectors.toList()))));

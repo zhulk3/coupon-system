@@ -24,14 +24,15 @@ public class BuildTemplateTest {
     private IBuildTemplateService buildTemplateService;
 
     @Test
-    public void testBuildTemplate()throws Exception{
+    public void testBuildTemplate() throws Exception {
         System.out.println(JSON.toJSONString(buildTemplateService.buildTemplate(fakeTemplateRequest())));
+        //防止主线程结束，异步线程没有执行完毕而挂掉
         Thread.sleep(5000);
     }
 
-    private TemplateRequest fakeTemplateRequest(){
+    private TemplateRequest fakeTemplateRequest() {
         TemplateRequest request = new TemplateRequest();
-        request.setName("优惠券模版_"+new Date().getTime());
+        request.setName("优惠券模版_" + new Date().getTime());
         request.setLogo("甜茶不贵");
         request.setDescription("one template");
         request.setCategoryCode(CouponCategory.FULL_DISCOUNT.getCode());
@@ -40,11 +41,11 @@ public class BuildTemplateTest {
         request.setUserId(100001L);
         request.setTarget(DistributeTarget.SINGLE.getCode());
         TemplateRuler ruler = new TemplateRuler();
-        ruler.setExpiration(new TemplateRuler.Expiration(PeriodType.SHIFT.getCode(), 1, DateUtils.addDays(new Date(),60).getTime()));
-        ruler.setDiscount(new TemplateRuler.Discount(5,1));
+        ruler.setExpiration(new TemplateRuler.Expiration(PeriodType.SHIFT.getCode(), 1, DateUtils.addDays(new Date(), 60).getTime()));
+        ruler.setDiscount(new TemplateRuler.Discount(5, 1));
         request.setTemplateRuler(ruler);
         ruler.setLimitation(1);
-        ruler.setUsage(new TemplateRuler.Usage("guizhou","guiyang","food"));
+        ruler.setUsage(new TemplateRuler.Usage("guizhou", "guiyang", "food"));
         ruler.setWeight(JSON.toJSONString(Collections.EMPTY_LIST));
         return request;
     }

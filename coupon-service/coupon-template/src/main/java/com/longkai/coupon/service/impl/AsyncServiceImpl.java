@@ -36,6 +36,7 @@ public class AsyncServiceImpl implements IAsyncService {
         Set<String> couponCodes = buildCouponCode(template);
         String redisKey = String.format("%s%s", Constant.RedisPrefix.COUPON_TEMPLATE, template.getId().toString());
         log.info("push code to redis: {}", stringRedisTemplate.opsForList().rightPushAll(redisKey, couponCodes));
+        //构造完成优惠券码，设置为可用状态
         template.setAvailable(true);
         couponTemplateDao.save(template);
         stopwatch.stop();
@@ -43,7 +44,7 @@ public class AsyncServiceImpl implements IAsyncService {
     }
 
     /**
-     * <h2>构造优惠券码</h2>
+     * <h2>构造优惠券码，18位信息，前4位是产品线+类型，中间6位是日期，后8位是随机数</h2>
      *
      * @param template {@link CouponTemplate}实体类
      * @return 与template.count 相同数量的优惠券码
@@ -51,6 +52,7 @@ public class AsyncServiceImpl implements IAsyncService {
     private Set<String> buildCouponCode(CouponTemplate template) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Set<String> result = new HashSet<>(template.getCount());
+        //产品线+类型
         String prefix4 = template.getProductLine().getCode().toString() + template.getCategory().getCode();
         String date = new SimpleDateFormat("yyMMdd").format(template.getCreateTime());
         for (int i = 0; i < template.getCount(); i++) {
@@ -68,6 +70,7 @@ public class AsyncServiceImpl implements IAsyncService {
     private String buildCouponCodeSuffix14(String date) {
         char[] bases = new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
         List<Character> chars = date.chars().mapToObj(e -> (char) e).collect(Collectors.toList());
+        Collections.shuffle(chars);
         String mid6 = chars.stream().map(Objects::toString).collect(Collectors.joining());
         String suffix8 = RandomStringUtils.random(1, bases) + RandomStringUtils.randomNumeric(7);
         return mid6 + suffix8;

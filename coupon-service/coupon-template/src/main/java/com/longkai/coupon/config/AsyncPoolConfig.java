@@ -13,6 +13,9 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * 异步线程池配置
+ */
 @Slf4j
 @EnableAsync
 @Configuration

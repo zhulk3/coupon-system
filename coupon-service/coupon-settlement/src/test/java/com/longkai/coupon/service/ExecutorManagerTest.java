@@ -22,23 +22,23 @@ import java.util.Collections;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class ExecutorManagerTest {
-    private Long fakeUserId = 2000L;
+    private final Long fakeUserId = 2000L;
 
     @Autowired
     private ExecutorManager executorManager;
 
     @Test
     public void testComputerRuler() throws CouponException {
-        //对满减优惠券进行测试
+        log.info("Discount coupon Executor test");
 
+        //对满减优惠券进行测试
 //        SettlementInfo fullDiscountInfo = fakeSettlementInfo();
 //        SettlementInfo result = executorManager.computeRuler(fullDiscountInfo);
 //        log.info("{}", result.getCost());
 //        log.info("{}", result.getCouponAndTemplateInfos().size());
 //        log.info("{}", result.getCouponAndTemplateInfos());
 
-        //对折扣优惠券进行结算
-//        log.info("Discount coupon Executor test");
+//        //对折扣优惠券进行结算
 //        SettlementInfo settlementInfo = fakeDiscountCouponSettlement();
 //        SettlementInfo result = executorManager.computeRuler(settlementInfo);
 //        log.info("{}", result.getCost());
@@ -46,20 +46,20 @@ public class ExecutorManagerTest {
 //        log.info("{}", result.getCouponAndTemplateInfos());
 
         //对立减优惠券进行结算测试
-//        log.info("Immediately coupon Executor test");
-//        SettlementInfo settlementInfo = fakeDiscountImmediatelyCoupon();
-//        SettlementInfo result = executorManager.computeRuler(settlementInfo);
-//        log.info("{}", result.getCost());
-//        log.info("{}", result.getCouponAndTemplateInfos().size());
-//        log.info("{}", result.getCouponAndTemplateInfos());
-
-        //对满减折扣组合优惠券进行测试
-        log.info("full and discount coupon Executor test");
-        SettlementInfo settlementInfo = fakeFullAndDiscountCouponInfo();
+        log.info("Immediately coupon Executor test");
+        SettlementInfo settlementInfo = fakeDiscountImmediatelyCoupon();
         SettlementInfo result = executorManager.computeRuler(settlementInfo);
         log.info("{}", result.getCost());
         log.info("{}", result.getCouponAndTemplateInfos().size());
         log.info("{}", result.getCouponAndTemplateInfos());
+
+//        //对满减折扣组合优惠券进行测试
+//        log.info("full and discount coupon Executor test");
+//        SettlementInfo settlementInfo = fakeFullAndDiscountCouponInfo();
+//        SettlementInfo result = executorManager.computeRuler(settlementInfo);
+//        log.info("{}", result.getCost());
+//        log.info("{}", result.getCouponAndTemplateInfos().size());
+//        log.info("{}", result.getCouponAndTemplateInfos());
     }
 
     private SettlementInfo fakeSettlementInfo() {
@@ -76,7 +76,7 @@ public class ExecutorManagerTest {
         GoodsInfo goodsInfoTwo = new GoodsInfo();
         goodsInfoTwo.setPrice(20.88);
         goodsInfoTwo.setCount(10);
-        goodsInfoTwo.setType(GoodsType.WENYI.getCode());
+        goodsInfoTwo.setType(GoodsType.SHENGXIAN.getCode());
 
         settlementInfo.setGoodsInfos(Arrays.asList(goodsInfoOne, goodsInfoTwo));
 
@@ -91,7 +91,7 @@ public class ExecutorManagerTest {
         ruler.setDiscount(new TemplateRuler.Discount(20, 199));
         sdk.setRuler(ruler);
         ruler.setUsage(new TemplateRuler.Usage("guizhou", "liupanshui", JSON.toJSONString(Arrays.asList(
-                GoodsType.WENYI.getCode(), GoodsType.JIAJU.getCode()
+                GoodsType.JIAJU.getCode(), GoodsType.JIAJU.getCode()
         ))));
         sdk.setRuler(ruler);
         couponAndTemplateInfo.setTemplateSDK(sdk);
@@ -130,14 +130,9 @@ public class ExecutorManagerTest {
         // 设置 TemplateRule
         TemplateRuler rule = new TemplateRuler();
         rule.setDiscount(new TemplateRuler.Discount(85, 1));
-//        rule.setUsage(new TemplateRuler.Usage("安徽省", "桐城市",
-//                JSON.toJSONString(Arrays.asList(
-//                        GoodsType.WENYI.getCode(),
-//                        GoodsType.JIAJU.getCode()
-//                ))));
         rule.setUsage(new TemplateRuler.Usage("安徽省", "桐城市",
                 JSON.toJSONString(Arrays.asList(
-                        GoodsType.SHENGXIAN.getCode(), //使用范围不再包括WENYI
+                        GoodsType.SHENGXIAN.getCode(),
                         GoodsType.JIAJU.getCode()
                 ))));
 
@@ -155,13 +150,13 @@ public class ExecutorManagerTest {
         info.setCost(0.0);
 
         GoodsInfo goodsInfo01 = new GoodsInfo();
-        goodsInfo01.setCount(2);
-        goodsInfo01.setPrice(10.88);
+        goodsInfo01.setCount(10);
+        goodsInfo01.setPrice(2.0);
         goodsInfo01.setType(GoodsType.WENYI.getCode());
 
         GoodsInfo goodsInfo02 = new GoodsInfo();
         goodsInfo02.setCount(10);
-        goodsInfo02.setPrice(20.88);
+        goodsInfo02.setPrice(20.0);
         goodsInfo02.setType(GoodsType.WENYI.getCode());
 
         info.setGoodsInfos(Arrays.asList(goodsInfo01, goodsInfo02));

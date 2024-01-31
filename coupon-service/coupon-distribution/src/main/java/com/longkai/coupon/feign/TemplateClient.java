@@ -12,11 +12,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(value = "eureka-client-coupon-template",fallback = TemplateClientHystrix.class)
+@FeignClient(value = "eureka-client-coupon-template", fallback = TemplateClientHystrix.class)
 public interface TemplateClient {
+    //在接口返回前，会通过增强器advice对返回类型进行封装
     @RequestMapping(value = "/coupon-template/template/sdk/all", method = RequestMethod.GET)
     CommonResponse<List<CouponTemplateSDK>> findAllUsableTemplate();
 
-    @RequestMapping(value = "/coupon-template/template//sdk/infos", method = RequestMethod.GET)
+    @RequestMapping(value = "/coupon-template/template/sdk/infos", method = RequestMethod.GET)
     CommonResponse<Map<Integer, CouponTemplateSDK>> findId2TemplateSDK(@RequestParam Collection<Integer> ids);
 }

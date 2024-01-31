@@ -31,14 +31,19 @@ public class HealthChecker {
 
     /**
      * <h2>健康检查接口</h2>
-     * 127.0.0.1:7001/coupon-template/health
+     * 127.0.0.1:7001/coupon-template/template/health
      */
-    @GetMapping("/template/health")
+    @GetMapping("/health")
     public String isHealthy() {
-        log.debug(("view health opt"));
+        log.debug(("view health API"));
         return "CouponTemplate Is OK";
     }
 
+    /**
+     * 异常测试接口
+     * @return
+     * @throws CouponException
+     */
     @GetMapping("/exception")
     public String exception() throws CouponException {
         log.debug(("view exception opt"));

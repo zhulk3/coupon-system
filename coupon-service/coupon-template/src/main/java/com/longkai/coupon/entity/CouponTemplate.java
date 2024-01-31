@@ -31,6 +31,7 @@ import java.util.Date;
 @JsonSerialize(using = CouponTemplateSerialize.class)
 @Table(name = "coupon_template")
 public class CouponTemplate {
+    /** 自增主键 */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

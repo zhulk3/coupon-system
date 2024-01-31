@@ -41,6 +41,7 @@ public class UserServiceController {
         return userService.acquireCoupon(request);
     }
 
+    // RequestBody对请求参数做反序列化
     @PostMapping("/settlement")
     public SettlementInfo settlement(@RequestBody SettlementInfo settlementInfo) throws CouponException {
         log.info("settlement: {}", settlementInfo);
